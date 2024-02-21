@@ -6,6 +6,7 @@ import { buttonVariants } from "./ui/button";
 import Cart from "./Cart";
 import { getServerSideUser } from "@/lib/payload-utils";
 import { cookies } from "next/headers";
+import UserAccountNav from "./UserAccountNav";
 
 
 const Navbar = async () => {
@@ -30,6 +31,7 @@ const Navbar = async () => {
 
               <div className="ml-auto flex items-center">
                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
+                  
                   {user ? null : (
                     <Link
                       href="/sign-in"
@@ -40,11 +42,13 @@ const Navbar = async () => {
                       Sign in
                     </Link>
                   )}
+
                   {user ? null : (
                     <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
                   )}
+
                   {user ? (
-                    <p></p>
+                    <UserAccountNav user={user} />
                   ) : (
                     <Link
                       href="/sign-up"
@@ -55,9 +59,11 @@ const Navbar = async () => {
                       Create account
                     </Link>
                   )}
+                  
                   {user ? (
                     <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
                   ) : null}
+
                   {user ? null : (
                     <div className="flex lg:ml-6">
                       <span
