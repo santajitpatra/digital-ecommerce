@@ -9,6 +9,8 @@ import bodyParser from "body-parser";
 import { stripeWebhookHandler } from "./webhooks";
 import path from "path";
 import nextBuild from "next/dist/build";
+import { PayloadRequest } from "payload/types";
+import { parse } from "url";
 
 
 const app = express();
@@ -35,14 +37,6 @@ const start = async () => {
   });
 
   app.post("/api/webhooks/stripe", webhookMiddleware, stripeWebhookHandler);
-
-  app.use(
-    "/api/trpc",
-    trpcExpress.createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
   
   // Create a new CMS instance
   const payload = await getPayloadClient({
@@ -67,6 +61,35 @@ const start = async () => {
 
     return;
   }
+
+
+  // Create a new express router for cart routes
+   const cartRouter = express.Router();
+
+   cartRouter.use(payload.authenticate);
+
+   cartRouter.get("/", (req, res) => {
+     const request = req as PayloadRequest;
+
+     if (!request.user) return res.redirect("/sign-in?origin=cart");
+
+     const parsedUrl = parse(req.url, true);
+     const { query } = parsedUrl;
+
+     return nextApp.render(req, res, "/cart", query);
+   });
+
+   app.use("/cart", cartRouter);
+
+
+   // Create a new trpc instance
+   app.use(
+     "/api/trpc",
+     trpcExpress.createExpressMiddleware({
+       router: appRouter,
+       createContext,
+     })
+   );
 
   app.use((req, res) => nextHandler(req, res));
 
